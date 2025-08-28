@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from requests import get as requests_get
 from bs4 import BeautifulSoup
 from ics import Calendar, Event
+from ics.grammar.parse import ContentLine
 
 
 @dataclass
@@ -22,6 +23,8 @@ class CalendarEventJSON:
     status: Literal['CONFIRMED', 'CANCELLED']
     location: str
     description: str
+
+    x_apple_travel_time: str | None = None
 
 
 class CalendarGenerator:
@@ -51,6 +54,8 @@ class CalendarGenerator:
         self.set_env_var('TIMEZONE_UTC_HOURS_SHIFT', 0, int)
         self.set_env_var('WEEKS_TO_FETCH', 2, int)
         self.set_env_var('FETCH_EVERY_HOURS', 6, int)
+
+        self.set_env_var('FIRST_LESSON_X_TRAVEL_TIME', 'PT15M')
 
     @staticmethod
     def normalize_text(text: str) -> str:
@@ -107,7 +112,7 @@ class CalendarGenerator:
 
             for day_tag in day_tags:
 
-                for lesson_tag in day_tag.select('ul > li'):
+                for i, lesson_tag in enumerate(day_tag.select('ul > li')):
 
                     lesson_tag_divs = lesson_tag.find_all('div', recursive=False)
 
@@ -147,13 +152,34 @@ class CalendarGenerator:
                         status='CANCELLED' if is_cancelled else 'CONFIRMED',
                         location=self.normalize_text(lesson_tag_divs[2].select_one('div > div > span').text),
                         description=f"Преподаватель: {teacher}",
+                        **({'x_apple_travel_time': self.FIRST_LESSON_X_TRAVEL_TIME} if i == 0 else {}),
                     )
 
                 current_date += timedelta(days=1)
 
         self.save_calendar_json(calendar_json)
 
-        return Calendar(events=[Event(**event_dict) for event_dict in map(dataclass_asdict, calendar_json.values())])
+        calendar = Calendar()
+
+        for calendar_json_event in calendar_json.values():
+
+            event = Event(
+                name=calendar_json_event.name,
+                begin=calendar_json_event.begin,
+                end=calendar_json_event.end,
+                status=calendar_json_event.status,
+                location=calendar_json_event.location,
+                description=calendar_json_event.description,
+            )
+
+            if calendar_json_event.x_apple_travel_time:
+                event.extra.append(ContentLine(
+                    name='X-APPLE-TRAVEL-DURATION;VALUE=DURATION', value=calendar_json_event.x_apple_travel_time
+                ))
+
+            calendar.events.add(event)
+
+        return calendar
 
     def save_to_ics(self, file_name: str, calendar: Calendar) -> None:
         with open(file_name, 'w', encoding='UTF-8') as f:
