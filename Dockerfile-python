@@ -1,0 +1,10 @@
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache gcc musl-dev libffi-dev git
+RUN pip install --no-cache-dir uv
+
+COPY . /app
+
+CMD ['uv', 'run', 'main.py']
