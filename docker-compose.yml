@@ -14,17 +14,17 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:81"
+      - "--entrypoints.web.address=:82"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.websecure.address=:8443"
+      - "--entrypoints.websecure.address=:8444"
       - --certificatesresolvers.tw.acme.email=${SSL_EMAIL}
       - --certificatesresolvers.tw.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.tw.acme.dnschallenge=true
       - --certificatesresolvers.tw.acme.dnschallenge.provider=timewebcloud
     ports:
-      - "81:81"
-      - "8443:8443"
+      - "82:82"
+      - "8444:8444"
     env_file:
       - .env
     volumes:
@@ -54,6 +54,7 @@ services:
       - traefik.http.middlewares.nginx.headers.STSIncludeSubdomains=true
       - traefik.http.middlewares.nginx.headers.STSPreload=true
       - traefik.http.routers.nginx.middlewares=nginx@docker
+      - traefik.http.services.nginx.loadbalancer.server.port=82
 
 volumes:
   timetables:
