@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile-python
     restart: unless-stopped
     volumes:
-      - ./app:/app:ro
+      - ./app:/app
       - timetables:/app/timetables
 
   traefik:
