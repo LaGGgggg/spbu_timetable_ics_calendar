@@ -96,7 +96,7 @@ class CalendarGenerator:
                 self.logger.error(f'Failed to fetch schedule for {current_date.isoformat()}: {response.status_code}')
                 break
 
-            soup = BeautifulSoup(response.content, 'lxml')
+            soup = BeautifulSoup(response.content, 'html.parser')
 
             day_tags = soup.select('#accordion > div.panel.panel-default')
 
