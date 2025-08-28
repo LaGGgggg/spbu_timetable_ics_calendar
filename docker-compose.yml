@@ -1,0 +1,61 @@
+services:
+  
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile-python
+    restart: unless-stopped
+    volumes:
+      - ./app:/app:ro
+      - timetables:/app/timetables
+
+  traefik:
+    image: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:81"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:8443"
+      - --certificatesresolvers.tw.acme.email=${SSL_EMAIL}
+      - --certificatesresolvers.tw.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.tw.acme.dnschallenge=true
+      - --certificatesresolvers.tw.acme.dnschallenge.provider=timewebcloud
+    ports:
+      - "81:81"
+      - "8443:8443"
+    env_file:
+      - .env
+    volumes:
+      - traefik_data:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - python
+      - traefik
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - timetables:/app/timetables
+    env_file:
+      - .env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nginx.rule=Host(`${ICS_HOST}`)
+      - traefik.http.routers.nginx.tls=true
+      - traefik.http.routers.nginx.entrypoints=websecure
+      - traefik.http.routers.nginx.tls.certresolver=tw
+      - traefik.http.middlewares.nginx.headers.browserXSSFilter=true
+      - traefik.http.middlewares.nginx.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.nginx.headers.forceSTSHeader=true
+      - traefik.http.middlewares.nginx.headers.STSIncludeSubdomains=true
+      - traefik.http.middlewares.nginx.headers.STSPreload=true
+      - traefik.http.routers.nginx.middlewares=nginx@docker
+
+volumes:
+  timetables:
+  traefik_data:
