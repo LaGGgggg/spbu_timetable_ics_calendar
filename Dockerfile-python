@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir uv
 
 COPY . /app
 
-CMD ['uv', 'run', 'main.py']
+CMD ["uv", "run", "main.py"]
