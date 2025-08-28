@@ -164,7 +164,7 @@ class CalendarGenerator:
 
             self.logger.info('Fetching new schedule and updating .ics file')
 
-            self.save_to_ics('timetable.ics', self.get_calendar())
+            self.save_to_ics('timetables/timetable.ics', self.get_calendar())
 
             self.logger.info('Updated .ics file successfully, sleeping...')
 
