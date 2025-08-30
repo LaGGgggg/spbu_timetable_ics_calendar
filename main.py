@@ -45,7 +45,7 @@ class CalendarGenerator:
 
         self.logger = getLogger(__name__)
 
-        self.CALENDAR_JSON_FILE_NAME = 'calendar.json'
+        self.CALENDAR_JSON_FILE_NAME = 'local_data/calendar.json'
 
         load_dotenv()
 

@@ -7,6 +7,7 @@ services:
     restart: unless-stopped
     volumes:
       - timetables:/app/timetables
+      - local_data:/app/local_data
 
   traefik:
     image: traefik
