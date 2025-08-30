@@ -157,6 +157,8 @@ class CalendarGenerator:
 
                 current_date += timedelta(days=1)
 
+            current_date += timedelta(days=(7 - current_date.weekday()))
+
         self.save_calendar_json(calendar_json)
 
         calendar = Calendar()
