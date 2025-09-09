@@ -64,7 +64,7 @@ class CalendarGenerator:
         """
         return text.replace('\n', '').replace('\r', '').replace(' ' * 20, '').replace('  ', '')
 
-    def load_calendar_json(self) -> dict[str, CalendarEventJSON]:
+    def load_calendar_json(self) -> dict[str, list[CalendarEventJSON]]:
 
         with open(self.CALENDAR_JSON_FILE_NAME, 'a+', encoding='UTF-8'):
             pass
@@ -72,21 +72,27 @@ class CalendarGenerator:
         with open(self.CALENDAR_JSON_FILE_NAME, 'r', encoding='UTF-8') as f:
 
             try:
-                return {date_iso: CalendarEventJSON(**event) for date_iso, event in load(f).items()}
+                return {
+                    date_iso: [CalendarEventJSON(**event) for event in events]
+                    for date_iso, events in load(f).items()
+                }
 
             except JSONDecodeError:
                 return {}
 
-    def save_calendar_json(self, data: dict[str, CalendarEventJSON]) -> None:
+    def save_calendar_json(self, data: dict[str, list[CalendarEventJSON]]) -> None:
 
-        data = {date_iso: dataclass_asdict(event) for date_iso, event in data.items()}
+        data = {
+            date_iso: [dataclass_asdict(event) for event in events]
+            for date_iso, events in data.items()
+        }
 
         with open(self.CALENDAR_JSON_FILE_NAME, 'w', encoding='UTF-8') as f:
             dump(data, f, ensure_ascii=False)
 
     def get_calendar(self) -> Calendar:
 
-        calendar_json: dict[str, CalendarEventJSON] = self.load_calendar_json()
+        calendar_json: dict[str, list[CalendarEventJSON]] = self.load_calendar_json()
 
         current_date = date.today() - timedelta(days=date.today().weekday())
 
@@ -145,7 +151,12 @@ class CalendarGenerator:
                         minute=time_end_minutes,
                     )
 
-                    calendar_json[begin_datetime.isoformat()] = CalendarEventJSON(
+                    begin_date_iso = begin_datetime.date().isoformat()
+
+                    if i == 0:
+                        calendar_json[begin_date_iso] = []
+
+                    calendar_json[begin_date_iso].append(CalendarEventJSON(
                         name=subject,
                         begin=begin_datetime.isoformat(),
                         end=end_datetime.isoformat(),
@@ -153,7 +164,7 @@ class CalendarGenerator:
                         location=self.normalize_text(lesson_tag_divs[2].select_one('div > div > span').text),
                         description=f"Преподаватель: {teacher}",
                         **({'x_apple_travel_time': self.FIRST_LESSON_X_TRAVEL_TIME} if i == 0 else {}),
-                    )
+                    ))
 
                 current_date += timedelta(days=1)
 
@@ -163,23 +174,24 @@ class CalendarGenerator:
 
         calendar = Calendar()
 
-        for calendar_json_event in calendar_json.values():
+        for calendar_json_events in calendar_json.values():
+            for calendar_json_event in calendar_json_events:
 
-            event = Event(
-                name=calendar_json_event.name,
-                begin=calendar_json_event.begin,
-                end=calendar_json_event.end,
-                status=calendar_json_event.status,
-                location=calendar_json_event.location,
-                description=calendar_json_event.description,
-            )
+                event = Event(
+                    name=calendar_json_event.name,
+                    begin=calendar_json_event.begin,
+                    end=calendar_json_event.end,
+                    status=calendar_json_event.status,
+                    location=calendar_json_event.location,
+                    description=calendar_json_event.description,
+                )
 
-            if calendar_json_event.x_apple_travel_time:
-                event.extra.append(ContentLine(
-                    name='X-APPLE-TRAVEL-DURATION;VALUE=DURATION', value=calendar_json_event.x_apple_travel_time
-                ))
+                if calendar_json_event.x_apple_travel_time:
+                    event.extra.append(ContentLine(
+                        name='X-APPLE-TRAVEL-DURATION;VALUE=DURATION', value=calendar_json_event.x_apple_travel_time
+                    ))
 
-            calendar.events.add(event)
+                calendar.events.add(event)
 
         return calendar
 
