@@ -33,7 +33,7 @@ class CalendarGenerator:
 
         value = environ.get(name, default_value)
 
-        if not value:
+        if value is None:
             self.logger.error(f'{name} is not set')
             raise ValueError(f'{name} is not set')
 
@@ -51,6 +51,8 @@ class CalendarGenerator:
 
         self.set_env_var('SCHEDULE_BASE_URL')
         self.set_env_var('ENGLISH_TEACHER_FULL_NAME')
+        # if True, the first english lesson on each week will be cancelled
+        self.set_env_var('IS_CANCEL_FIRST_ENGLISH_LESSON', False, bool)
         self.set_env_var('TIMEZONE_UTC_HOURS_SHIFT', 0, int)
         self.set_env_var('WEEKS_TO_FETCH', 2, int)
         self.set_env_var('FETCH_EVERY_HOURS', 6, int)
@@ -116,6 +118,8 @@ class CalendarGenerator:
                 current_date += timedelta(weeks=1)
                 continue
 
+            is_first_english_lesson_cancelled = False
+
             for day_tag in day_tags:
 
                 for i, lesson_tag in enumerate(day_tag.select('ul > li')):
@@ -135,6 +139,15 @@ class CalendarGenerator:
                     time_end_hours, time_end_minutes = map(int, time_end.split(':'))
 
                     is_cancelled = 'cancelled' in time_tag.get('class')
+
+                    if all((
+                            'Английский язык' in subject,
+                            self.IS_CANCEL_FIRST_ENGLISH_LESSON,
+                            not is_first_english_lesson_cancelled,
+                    )):
+
+                        is_cancelled = True
+                        is_first_english_lesson_cancelled = True
 
                     begin_datetime = datetime(
                         year=current_date.year,
