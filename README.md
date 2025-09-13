@@ -19,7 +19,6 @@ in your favorite calendar application.
     TIMEZONE_UTC_HOURS_SHIFT=3
 
     # Not required variables with default values:
-
     # If True, the first english lesson in a week will be marked as cancelled.
     IS_CANCEL_FIRST_ENGLISH_LESSON=True
     # Number of weeks to fetch from the timetable website.
@@ -41,4 +40,4 @@ in your favorite calendar application.
     TIMEWEBCLOUD_AUTH_TOKEN="<your_timewebcloud_auth_token>"
    ```
 4. Build and run docker compose, after check the logs: `docker compose up -d --build && docker compose logs -f`
-5. Access the calendar at `https://<your_server_domain_name>/calendar.ics`
+5. Access the calendar at `https://<your_server_domain_name>:8444/timetable.ics`
