@@ -24,6 +24,11 @@ in your favorite calendar application.
     IS_CANCEL_FIRST_ENGLISH_LESSON=True
     # Number of weeks to fetch from the timetable website.
     WEEKS_TO_FETCH=2
+    # How often (in hours) to fetch and update the calendar.
+    FETCH_EVERY_HOURS=6
+    # Travel time in minutes to add before the first lesson of the day. This feature is for Apple Calendar users.
+    # Format of the value: "PT15M" for 15 minutes.
+    FIRST_LESSON_X_TRAVEL_TIME=PT15M
 
     # Required docker compose variables:
     # Your email for generating a free SSL certificate with Let's Encrypt.
