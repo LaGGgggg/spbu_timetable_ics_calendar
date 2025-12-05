@@ -166,6 +166,9 @@ class CalendarGenerator:
 
                     begin_date_iso = begin_datetime.date().isoformat()
 
+                    if i == 0:
+                        calendar_json[begin_date_iso] = []
+
                     calendar_json.setdefault(begin_date_iso, []).append(CalendarEventJSON(
                         name=subject,
                         begin=begin_datetime.isoformat(),
