@@ -172,7 +172,7 @@ class CalendarGenerator:
                         end=end_datetime.isoformat(),
                         status='CANCELLED' if is_cancelled else 'CONFIRMED',
                         location=self.normalize_text(lesson_tag_divs[2].select_one('div > div > span').text),
-                        description=f"Преподаватель: {teacher}",
+                        description=f'Преподаватель: {teacher}',
                         **({'x_apple_travel_time': self.FIRST_LESSON_X_TRAVEL_TIME} if i == 0 else {}),
                     ))
 
