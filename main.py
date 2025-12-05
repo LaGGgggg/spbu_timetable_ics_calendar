@@ -221,5 +221,5 @@ class CalendarGenerator:
             sleep(self.FETCH_EVERY_HOURS * 60 * 60)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     CalendarGenerator().run_auto_update()
