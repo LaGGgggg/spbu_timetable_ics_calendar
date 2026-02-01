@@ -133,7 +133,13 @@ class CalendarGenerator:
                         continue
 
                     time_tag = lesson_tag_divs[0].select_one('div > div > span')
-                    time_begin, time_end = self.normalize_text(time_tag.text).split('–')
+                    time_tag_text = self.normalize_text(time_tag.text)
+
+                    if '–' in time_tag_text:
+                        time_begin, time_end = time_tag_text.split('–')
+
+                    else:
+                        time_begin, time_end = time_tag_text, time_tag_text
 
                     time_begin_hours, time_begin_minutes = map(int, time_begin.split(':'))
                     time_end_hours, time_end_minutes = map(int, time_end.split(':'))
