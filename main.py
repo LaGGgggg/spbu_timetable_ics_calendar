@@ -29,6 +29,16 @@ class CalendarEventJSON:
 
 class CalendarGenerator:
 
+    DAY_NAME_TO_WEEKDAY: dict[str, int] = {
+        'понедельник': 0,
+        'вторник': 1,
+        'среда': 2,
+        'четверг': 3,
+        'пятница': 4,
+        'суббота': 5,
+        'воскресенье': 6,
+    }
+
     def set_env_var(self, name: str, default_value: Any = None, value_converter: Callable[[str], Any] = str) -> None:
 
         value = environ.get(name, default_value)
@@ -121,6 +131,12 @@ class CalendarGenerator:
             is_first_english_lesson_cancelled = False
 
             for day_tag in day_tags:
+
+                day_name = self.normalize_text(day_tag.select_one('div.panel-heading > h4.panel-title').text).split(
+                    ',', 1
+                )[0]
+
+                current_date += timedelta(days=self.DAY_NAME_TO_WEEKDAY[day_name] - current_date.weekday())
 
                 for i, lesson_tag in enumerate(day_tag.select('ul > li')):
 
