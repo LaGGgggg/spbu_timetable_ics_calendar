@@ -23,6 +23,7 @@ services:
       - --certificatesresolvers.tw.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.tw.acme.dnschallenge=true
       - --certificatesresolvers.tw.acme.dnschallenge.provider=timewebcloud
+      - --providers.docker.constraints=Label(`traefik.instance`,`spbu-timetable-ics-calendar`)
     ports:
       - "82:82"
       - "8444:8444"
@@ -45,6 +46,7 @@ services:
       - .env
     labels:
       - traefik.enable=true
+      - traefik.instance=spbu-timetable-ics-calendar
       - traefik.http.routers.nginx.rule=Host(`${ICS_HOST}`)
       - traefik.http.routers.nginx.tls=true
       - traefik.http.routers.nginx.entrypoints=websecure
